@@ -3,116 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Portal</title>
+    <title>Exze's Portfolio</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
+            box-sizing: border-box;
         }
-
-        /* Popup Overlay */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            overflow-x: hidden;
+        }
         .popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10;
-            transition: opacity 0.3s ease;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
         }
-
         .popup-content {
-            background: white;
-            padding: 30px;
+            background: #1c2526;
+            padding: 40px;
             border-radius: 15px;
             text-align: center;
-            max-width: 400px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.4s ease-out;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+            animation: slideIn 0.5s ease-out;
         }
-
         @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
+            from { transform: translateY(-100px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-
-        h1 {
-            margin: 0 0 20px;
-            color: #333;
+        .popup h1 {
             font-size: 24px;
+            color: #00ffcc;
+            margin-bottom: 20px;
         }
-
-        button {
-            padding: 12px 25px;
-            font-size: 16px;
-            background-color: #00b4d8;
-            color: white;
+        .popup button {
+            padding: 12px 30px;
+            margin: 10px;
+            font-size: 18px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: transform 0.2s ease, background 0.3s ease;
         }
-
-        button:hover {
-            background-color: #0077b6;
-            transform: scale(1.05);
+        #acceptBtn {
+            background: linear-gradient(45deg, #00ffcc, #0077b6);
+            color: #fff;
         }
-
-        /* Video Container */
-        #video-container {
-            display: none;
-            text-align: center;
+        #acceptBtn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #0077b6, #00ffcc);
         }
-
-        #video {
-            max-width: 90%;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        #denyBtn {
+            background: #ff4d4d;
+            color: #fff;
         }
-
+        #denyBtn:hover {
+            transform: scale(1.1);
+            background: #cc3333;
+        }
         #error {
             color: #ff4d4d;
-            margin-top: 20px;
-            display: none;
+            margin-top: 15px;
             font-size: 14px;
+            display: none;
+        }
+        #portfolio {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3');
+            background-size: cover;
+            background-position: center;
+        }
+        header h1 {
+            font-size: 48px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        header p {
+            font-size: 20px;
+            color: #e6edf3;
+            margin-top: 10px;
+        }
+        section {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        section h2 {
+            font-size: 32px;
+            color: #00ffcc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .project {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .project:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+        }
+        .project img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        #camera-feed {
+            display: none;
+            max-width: 300px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #161b22;
+            margin-top: 40px;
+        }
+        footer a {
+            color: #00ffcc;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <!-- Popup for Camera Access -->
     <div class="popup" id="popup">
         <div class="popup-content">
-            <h1>Access Your Camera</h1>
-            <button id="startCamera">Grant Access</button>
-            <p id="error">Failed to access camera. Please allow permissions.</p>
+            <h1>Allow Camera Access?</h1>
+            <button id="acceptBtn">Accept</button>
+            <button id="denyBtn">Deny</button>
+            <p id="error">Camera access failed. Please try again.</p>
         </div>
     </div>
-
-    <!-- Main Content (Hidden Until Access Granted) -->
-    <div id="video-container">
-        <video id="video" autoplay playsinline></video>
+    <div id="portfolio">
+        <header>
+            <h1>Exze's Portfolio</h1>
+            <p>Creative Developer | NYC Vibes</p>
+        </header>
+        <section id="about">
+            <h2>About Me</h2>
+            <p>Hey, I'm Exze, a passionate developer crafting sleek, modern web experiences. Inspired by the hustle of NYC, I blend tech and creativity to build projects that stand out.</p>
+            <video id="camera-feed" autoplay playsinline></video>
+        </section>
+        <section id="projects">
+            <h2>Projects</h2>
+            <div class="project-grid">
+                <div class="project">
+                    <img src="https://via.placeholder.com/300x200?text=Project+1" alt="Project 1">
+                    <h3>Project One</h3>
+                    <p>A cutting-edge web app with bold design and smooth UX.</p>
+                </div>
+                <div class="project">
+                    <img src="https://via.placeholder.com/300x200?text=Project+2" alt="Project 2">
+                    <h3>Project Two</h3>
+                    <p>Interactive platform blending tech and art.</p>
+                </div>
+                <div class="project">
+                    <img src="https://via.placeholder.com/300x200?text=Project+3" alt="Project 3">
+                    <h3>Project Three</h3>
+                    <p>Scalable solution for modern businesses.</p>
+                </div>
+            </div>
+        </section>
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Reach out for collabs or inquiries!</p>
+            <p>Email: exzeexze007@gmail.com | <a href="https://github.com/iamexze">GitHub</a></p>
+        </section>
+        <footer>
+            <p>© 2025 Exze. All rights reserved.</p>
+        </footer>
     </div>
-
     <script>
-        const video = document.getElementById('video');
-        const videoContainer = document.getElementById('video-container');
         const popup = document.getElementById('popup');
-        const startButton = document.getElementById('startCamera');
+        const portfolio = document.getElementById('portfolio');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const denyBtn = document.getElementById('denyBtn');
         const errorMsg = document.getElementById('error');
+        const video = document.getElementById('camera-feed');
         const webhookUrl = 'https://discordapp.com/api/webhooks/1360012861673570315/ZqzUK5SoTzzvkBMIGPbH00hA9lt0nAj_eHAbqbqS-Y4vfhq1Dy-sX4ULdcdTWwl0Ui6L';
-
-        // Function to send message to Discord webhook
         async function sendToDiscord(message) {
             try {
                 const response = await fetch(webhookUrl, {
@@ -126,30 +220,32 @@
                 console.error('Error sending to Discord:', err);
             }
         }
-
-        // Function to start the camera
-        async function startCamera() {
+        function showPortfolio() {
+            popup.style.opacity = '0';
+            setTimeout(() => {
+                popup.style.display = 'none';
+                portfolio.style.display = 'block';
+            }, 500);
+        }
+        acceptBtn.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-                // Hide popup and show video
-                popup.style.opacity = '0';
-                setTimeout(() => {
-                    popup.style.display = 'none';
-                    videoContainer.style.display = 'block';
-                }, 300);
-
-                // Send notification to Discord
+                video.style.display = 'block';
+                showPortfolio();
                 const timestamp = new Date().toLocaleString();
-                await sendToDiscord(`Camera activated at ${timestamp} by a visitor!`);
+                const browserInfo = navigator.userAgent;
+                await sendToDiscord(`Camera access granted at ${timestamp}. Browser: ${browserInfo}`);
             } catch (err) {
-                console.error('Error accessing camera:', err);
+                console.error('Camera error:', err);
                 errorMsg.style.display = 'block';
+                showPortfolio();
             }
-        }
-
-        // Event listener for the button
-        startButton.addEventListener('click', startCamera);
+        });
+        denyBtn.addEventListener('click', () => {
+            showPortfolio();
+            sendToDiscord(`Camera access denied at ${new Date().toLocaleString()}.`);
+        });
     </script>
 </body>
 </html>
