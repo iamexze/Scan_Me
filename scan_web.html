@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Portal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Popup Overlay */
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #00b4d8;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0077b6;
+            transform: scale(1.05);
+        }
+
+        /* Video Container */
+        #video-container {
+            display: none;
+            text-align: center;
+        }
+
+        #video {
+            max-width: 90%;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #error {
+            color: #ff4d4d;
+            margin-top: 20px;
+            display: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Popup for Camera Access -->
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <h1>Access Your Camera</h1>
+            <button id="startCamera">Grant Access</button>
+            <p id="error">Failed to access camera. Please allow permissions.</p>
+        </div>
+    </div>
+
+    <!-- Main Content (Hidden Until Access Granted) -->
+    <div id="video-container">
+        <video id="video" autoplay playsinline></video>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const videoContainer = document.getElementById('video-container');
+        const popup = document.getElementById('popup');
+        const startButton = document.getElementById('startCamera');
+        const errorMsg = document.getElementById('error');
+        const webhookUrl = 'https://discordapp.com/api/webhooks/1360012861673570315/ZqzUK5SoTzzvkBMIGPbH00hA9lt0nAj_eHAbqbqS-Y4vfhq1Dy-sX4ULdcdTWwl0Ui6L';
+
+        // Function to send message to Discord webhook
+        async function sendToDiscord(message) {
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: message }),
+                });
+                if (!response.ok) throw new Error('Webhook failed');
+                console.log('Message sent to Discord');
+            } catch (err) {
+                console.error('Error sending to Discord:', err);
+            }
+        }
+
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                // Hide popup and show video
+                popup.style.opacity = '0';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    videoContainer.style.display = 'block';
+                }, 300);
+
+                // Send notification to Discord
+                const timestamp = new Date().toLocaleString();
+                await sendToDiscord(`Camera activated at ${timestamp} by a visitor!`);
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Event listener for the button
+        startButton.addEventListener('click', startCamera);
+    </script>
+</body>
+</html>
